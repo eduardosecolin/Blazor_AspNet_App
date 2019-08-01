@@ -1,0 +1,257 @@
+@page "/employee"
+@using Blazor_AspNet_App.Models
+@using Blazor_AspNet_App.DataManager.EmployeeServices
+
+
+<h1>Colaboradores</h1>
+
+<div>
+    <div style="float:left">
+        <button class="btn btn-primary" @onclick="@AddEmployee">Cadastrar</button>
+    </div>
+</div>
+<br />
+<br />
+<div>
+    @if (employees == null)
+    {
+        <p><em>Carregando...</em></p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nome</th>
+                    <th>Departamento</th>
+                    <th>Genero</th>
+                    <th>Cidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in employees)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.Nome</td>
+                        <td>@item.Departamento</td>
+                        <td>@item.Genero</td>
+                        <td>@item.Cidade</td>
+                        <td>
+                            <button class="btn btn-info" @onclick="@(async () => await EditeEmployee(item.Id))">Editar</button>
+                            <button class="btn btn-warning" @onclick="@(async () => await DetailsEmployee(item.Id))">Detalhes</button>
+                            <button class="btn btn-danger" @onclick="@(async () => await DeleteConfirm(item.Id))">Excluir</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        if (isAdd)
+        {
+            <div class="modal" tabindex="-1" style="display:block" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title">@ModalTitle</h3>
+                            <button type="button" class="close" @onclick="@CloseModal">
+                                <span aria-hidden="true">X</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="form-group">
+                                    <label for="Name" class="custom-control-label">Nome</label>
+                                    <input id="Name" class="form-control" @bind="@emp.Nome" />
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="Gender" class="control-label">Genero</label>
+                                    <select asp-for="Gender" class="form-control" @bind="@emp.Genero">
+                                        <option value="">-- Selecione o genero --</option>
+                                        <option value="M">Masculino</option>
+                                        <option value="F">Feminino</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="Department" class="control-label">Departmento</label>
+                                    <input asp-for="Department" class="form-control" @bind="@emp.Departamento" />
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="City" class="control-label">Cidade</label>
+                                    <select asp-for="City" class="form-control" @bind="@emp.Cidade">
+                                        <option value="">-- Selecione a cidade --</option>
+                                        @foreach (var city in cityList)
+                                        {
+                                            <option value="@city.Cidade">@city.Cidade</option>
+                                        }
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-block btn-info" data-dismiss="modal" @onclick="@SaveEmployee">Salvar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        if (isDelete)
+        {
+            <div class="modal" tabindex="-1" style="display:block" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Deletar</h3>
+                        </div>
+                        <div class="modal-body">
+                            <h4>Tem certeza que deseja deketar o colaborador??</h4>
+                            <table class="table">
+                                <tr>
+                                    <td>Nome</td>
+                                    <td>@emp.Nome</td>
+                                </tr>
+                                <tr>
+                                    <td>Genero</td>
+                                    <td>@emp.Genero</td>
+                                </tr>
+                                <tr>
+                                    <td>Departamento</td>
+                                    <td>@emp.Departamento</td>
+                                </tr>
+                                <tr>
+                                    <td>Cidade</td>
+                                    <td>@emp.Cidade</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-danger" @onclick="@(async () => await DeleteEmployee(emp.Id))" data-dismiss="modal">Sim</button>
+                            <button class="btn btn-warning" @onclick="@CloseModal">Nao</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        if (isDetails)
+        {
+            <div class="modal" tabindex="-1" style="display:block" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Detalhes</h3>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table">
+                                <tr>
+                                    <td>Nome</td>
+                                    <td>@emp.Nome</td>
+                                </tr>
+                                <tr>
+                                    <td>Genero</td>
+                                    <td>@emp.Genero</td>
+                                </tr>
+                                <tr>
+                                    <td>Departamento</td>
+                                    <td>@emp.Departamento</td>
+                                </tr>
+                                <tr>
+                                    <td>Cidade</td>
+                                    <td>@emp.Cidade</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-info" @onclick="@CloseModal">Voltar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+
+    List<Tbcolaboradore> employees;
+    List<Tbcidade> cityList;
+    EmployeeService service = new EmployeeService();
+    public string ModalTitle;
+    public bool isAdd = false;
+    public bool isDelete = false;
+    public bool isDetails = false;
+    public string SearchString;
+    Tbcolaboradore emp = new Tbcolaboradore();
+
+    protected override async Task OnInitAsync()
+    {
+        await LoadEmployees();
+        await LoadCities();
+    }
+
+    protected async Task LoadEmployees()
+    {
+        employees = await service.GetAllEmployee();
+    }
+
+    protected async Task LoadCities()
+    {
+        cityList = await service.GetCitiesEmployee();
+    }
+
+    protected async Task DetailsEmployee(int id)
+    {
+        emp = await service.GetEmployeeById(id);
+        isDetails = true;
+    }
+
+    protected void AddEmployee()
+    {
+        emp = new Tbcolaboradore();
+        ModalTitle = "Cadastrar Colaboradores";
+        isAdd = true;
+    }
+
+    public async Task EditeEmployee(int id)
+    {
+        emp = await service.GetEmployeeById(id);
+        ModalTitle = "Editar Colaborador";
+        isAdd = true;
+    }
+
+    public async Task SaveEmployee()
+    {
+        if (emp.Id != 0)
+        {
+            await Task.Run(() => { service.Update(emp); });
+        }
+        else
+        {
+            await Task.Run(() => { service.Create(emp); });
+        }
+        isAdd = false;
+        await LoadEmployees();
+    }
+
+    public async Task DeleteConfirm(int id)
+    {
+        emp = await service.GetEmployeeById(id);
+        isDelete = true;
+    }
+
+    public async Task DeleteEmployee(int id)
+    {
+        await Task.Run(() => { service.DeleteEmployee(id); });
+        isDelete = false;
+        await LoadEmployees();
+    }
+
+    public void CloseModal()
+    {
+        isAdd = false;
+        isDelete = false;
+        isDetails = false;
+    }
+}
